@@ -1,6 +1,6 @@
-# Project Title
+# CarTheftBot :red_car:
 
-One Paragraph of project description goes here
+CarTheftBot is a chatbot system where citizens report stolen cars to bots and bots report to police to stop them.
 
 ## Getting Started
 
@@ -58,9 +58,8 @@ Add additional notes about how to deploy this on a live system
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+* One
+* Two
 
 ## Contributing
 
@@ -78,7 +77,7 @@ See also the list of [contributors](https://github.com/your/project/contributors
 
 ## License
 
-This project is licensed under the GNU License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the GNU License - see the [LICENSE](LICENSE) file for details
 
 ## Acknowledgments
 
