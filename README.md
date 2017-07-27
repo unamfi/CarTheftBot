@@ -1,4 +1,4 @@
-# CarTheftBot :red_car:
+![](Resources/banner.png?raw=true)
 
 CarTheftBot is a chatbot system where citizens report stolen cars to bots and bots report to police to stop them.
 
