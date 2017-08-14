@@ -1,0 +1,368 @@
+swagger: '2.0'
+info:
+  title: CarTheft API
+  description: An API to reduce Car theft in Mexico
+  version: 1.0.0
+host: todo.cartheft.bot
+schemes:
+  - https
+basePath: /v1
+produces:
+  - applicaiton/json
+  - application/xml
+paths:
+  /vehicles:
+    get:
+      summary: Vehicle list
+      description: >-
+        The Vehicle endpoint returns information about lost vehicles based on
+        status, Insurance carrier, Loss date, Loss location, Recovery date,
+        Recovery location, Recovery type, Car owner, Reported by(Name, phone,
+        relation to car owner), VIN, License plate, Make, Model, Year, Color,
+        What happened? (Description of the moment when the car was stolen), Loss
+        cause (theft with violence, stolen from garage or parked at street?,
+        kidnap, etc), Is person injured?, Is person dead?
+      operationId: findVehicleBy
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: status
+          in: query
+          description: Car lost status.
+          required: false
+          type: string
+        - name: insuranceCarrier
+          in: query
+          description: Insurance carrier for the lost car.
+          required: false
+          type: string
+      tags:
+        - Vehicles
+      responses:
+        '200':
+          description: An array of lost reported vehicles
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Vehicle'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+        - api_key: []
+  /reports:
+    get:
+      summary: Report for a given vehicle
+      description: The Report endpoint returns information regarding an stolen vehicle
+      operationId: findReportBy
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - name: status
+          in: query
+          description: Report lost status.
+          required: false
+          type: string
+        - name: licensePlate
+          in: query
+          description: License plate for the lost car.
+          required: false
+          type: string
+      tags:
+        - Vehicles
+        - Reports
+      responses:
+        '200':
+          description: An array of lost vehicles reports
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Report'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+        - api_key: []
+    post:
+      summary: Creates a new lost car report
+      description: Creates a new lost car report
+      operationId: addReport
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Report object that needs to be added
+          required: true
+          schema:
+            $ref: '#/definitions/Report'
+      tags:
+        - Vehicles
+        - Reports
+      responses:
+        '201':
+          description: >-
+            Location header with a link to the newly-created resource with the
+            201 HTTP status.
+          schema:
+            type: string
+        '405':
+          description: Invalid input
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+        - cartheft_auth:
+            - 'write:vehicles'
+            - 'read:vehicles'
+            - 'write:reports'
+            - 'read:reports'
+  /me:
+    get:
+      summary: User Profile
+      description: >-
+        The User Profile endpoint returns information about user that has
+        authorized with the application.
+      tags:
+        - User
+      responses:
+        '200':
+          description: Profile information for a user
+          schema:
+            $ref: '#/definitions/Person'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+        - api_key: []
+  /history:
+    get:
+      summary: Lost vehicle Activity
+      description: The Activity events for a given lost vehicle.
+      parameters:
+        - name: uuid
+          in: query
+          type: integer
+          format: int32
+          description: Vehicle UUID.
+        - name: limit
+          in: query
+          type: integer
+          format: int32
+          description: 'Number of items to retrieve. Default is 5, maximum is 100.'
+      tags:
+        - User
+      responses:
+        '200':
+          description: History information for the given vehicle
+          schema:
+            $ref: '#/definitions/Activities'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+        - api_key: []
+securityDefinitions:
+  cartheft_auth:
+    type: oauth2
+    authorizationUrl: 'http://cartheft.swagger.io/oauth/dialog'
+    flow: implicit
+    scopes:
+      'write:vehicles': modify vehicles
+      'read:vehicles': read your vehicles
+      'write:reports': modify reports
+      'read:reports': read your reports
+  api_key:
+    type: apiKey
+    name: api_key
+    in: header
+definitions:
+  Activity:
+    type: object
+    properties:
+      uuid:
+        type: string
+        description: Unique identifier for the activity
+  Activities:
+    type: object
+    properties:
+      offset:
+        type: integer
+        format: int32
+        description: Position in pagination.
+      limit:
+        type: integer
+        format: int32
+        description: Number of items to retrieve (100 max).
+      count:
+        type: integer
+        format: int32
+        description: Total number of items available.
+      history:
+        type: array
+        items:
+          $ref: '#/definitions/Activity'
+  Address:
+    type: object
+    properties:
+      uuid:
+        type: integer
+        format: int32
+        description: Unique identifier representing a specific Address
+      street:
+        type: string
+        description: TODO
+      colonia:
+        type: string
+        description: TODO
+      zip:
+        type: string
+        description: TODO.
+      city:
+        type: string
+        description: TODO.
+      state:
+        type: string
+        description: TODO.
+      spatialpoint:
+        $ref: '#/definitions/SpatialPoint'
+  Person:
+    type: object
+    properties:
+      uuid:
+        type: integer
+        format: int32
+        description: Unique identifier representing a specific Person
+      first_name:
+        type: string
+        description: TODO
+      middle_name:
+        type: string
+        description: TODO
+      last_name_1:
+        type: string
+        description: TODO
+      last_name_2:
+        type: string
+        description: TODO
+      phone:
+        type: string
+        description: TODO
+      email:
+        type: string
+        description: TODO
+      picture:
+        type: string
+        description: Image URL of the Person.
+  Report:
+    type: object
+    properties:
+      uuid:
+        type: integer
+        format: int32
+        description: Unique identifier representing a specific report.
+      description:
+        type: string
+      loss_date:
+        type: string
+        format: date-time
+        description: TODO
+      loss_cause:
+        type: string
+        description: >-
+          TODO theft with violence, stolen from garage or parked at street?,
+          kidnap, etc
+      injured_people:
+        type: boolean
+        description: TODO
+      dead_people:
+        type: boolean
+        description: TODO
+      reported_by:
+        $ref: '#/definitions/Person'
+      vehicles:
+        type: array
+        items:
+          $ref: '#/definitions/Vehicle'
+      history:
+        type: array
+        items:
+          $ref: '#/definitions/Activity'
+  SpatialPoint:
+    type: object
+    properties:
+      longitude:
+        type: integer
+        format: int64
+      latitude:
+        type: integer
+        format: int64
+  Vehicle:
+    type: object
+    properties:
+      uuid:
+        type: integer
+        format: int32
+        description: Unique identifier representing a specific vehicle.
+      license_plate:
+        type: string
+        description: TODO
+      license_plate_picture:
+        type: string
+        description: Image URL of the Person.
+      make:
+        type: string
+        description: TODO
+      model:
+        type: string
+        description: TODO
+      year:
+        type: string
+        description: TODO
+      insurance_carrier:
+        type: string
+        description: Insurance carrier
+      loss_date:
+        type: string
+        format: date-time
+        description: TODO
+      loss_location:
+        $ref: '#/definitions/Address'
+      recovery_date:
+        type: string
+        format: date-time
+        description: TODO
+      recovery_location:
+        type: string
+        description: TODO
+      recovery_type:
+        type: string
+        description: 'TODO (police, insurance, owner, violent, non-violent)'
+      vehicle_owner:
+        $ref: '#/definitions/Person'
+      vehicle_vin:
+        type: string
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
+externalDocs:
+  description: Find out more about CarTheft
+  url: 'https://github.com/unamfi/CarTheftBot'
