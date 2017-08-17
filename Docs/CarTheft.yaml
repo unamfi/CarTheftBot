@@ -133,18 +133,83 @@ paths:
         The User Profile endpoint returns information about user that has
         authorized with the application.
       tags:
-        - User
+        - Account
       responses:
         '200':
           description: Profile information for a user
           schema:
-            $ref: '#/definitions/Person'
+            $ref: '#/definitions/Account'
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
       security:
         - api_key: []
+  /login:
+    get:
+      summary: User Login
+      description: User Login
+      tags:
+        - Account
+      parameters:
+        - in: query
+          name: username
+          description: Login User Account
+          required: true
+          type: string
+        - in: query
+          name: password
+          description: Password User Account
+          required: true
+          type: string
+      responses:
+        '200':
+          description: User Login
+          schema:
+            $ref: '#/definitions/Account'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+        - api_key: []      
+  /signup:
+    post:
+      summary: Creates a new account
+      description: Creates a new account
+      operationId: addAccount
+      consumes:
+        - application/json
+        - application/xml
+      produces:
+        - application/xml
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Creates New User Account
+          required: true
+          schema:
+            $ref: '#/definitions/Account'
+      tags:
+        - Account
+      responses:
+        '201':
+          description: >-
+            Location header with a link to the newly-created resource with the
+            201 HTTP status.
+          schema:
+            type: string
+        '405':
+          description: Invalid input
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      security:
+        - cartheft_auth:
+            - 'write:account'
+            - 'read:account'
   /history:
     get:
       summary: Lost vehicle Activity
@@ -161,7 +226,7 @@ paths:
           format: int32
           description: 'Number of items to retrieve. Default is 5, maximum is 100.'
       tags:
-        - User
+        - Vehicles
       responses:
         '200':
           description: History information for the given vehicle
@@ -179,10 +244,12 @@ securityDefinitions:
     authorizationUrl: 'http://cartheft.swagger.io/oauth/dialog'
     flow: implicit
     scopes:
-      'write:vehicles': modify vehicles
-      'read:vehicles': read your vehicles
+      'write:account': modify account
+      'read:account': read your account
       'write:reports': modify reports
       'read:reports': read your reports
+      'write:vehicles': modify vehicles
+      'read:vehicles': read your vehicles
   api_key:
     type: apiKey
     name: api_key
@@ -265,6 +332,104 @@ definitions:
       picture:
         type: string
         description: Image URL of the Person.
+  Account:
+    type: object
+    properties:
+      uuid:
+        type: integer
+        format: int32
+        description: Unique identifier representing a specific Account
+      username:
+        type: string
+        description: TODO
+      password:
+        type: string
+        description: TODO
+      person:
+        $ref: '#/definitions/Person'
+      verified:
+        type: boolean
+        description: TODO
+      verified_method:
+        type: string
+        description: TODO
+      roles:
+        $ref: '#/definitions/Roles'
+      creation_date:
+        type: string
+        format: date-time
+        description: TODO
+      approval_date:
+        type: string
+        format: date-time
+        description: TODO
+      lastlogin_date:
+        type: string
+        format: date-time
+        description: TODO
+      approval_admin:
+        type: string
+        description: TODO
+      is_active:
+        type: boolean
+        description: TODO
+  Roles:
+    type: object
+    properties:
+      uuid:
+        type: integer
+        format: int32
+        description: Unique identifier representing a specific report.
+      name:
+        type: string
+        description: TODO
+      description:
+        type: string
+        description: TODO
+      user_rol:
+        type: string
+        description: TODO
+        enum:
+          - admin
+          - supervisor
+          - car_owner
+          - witness
+          - police
+          - nurse
+          - doctor
+          - insurance_agent
+          - attorney
+      is_active:
+        type: boolean
+        description: TODO
+      creation_date:
+        type: string
+        format: date-time
+        description: TODO
+  UserLogDetails:
+    type: object
+    properties:
+      uuid:
+        type: integer
+        format: int32
+        description: Unique identifier representing a specific report.
+      user:
+        $ref: '#/definitions/Account'
+      lastlogin_date:
+        type: string
+        format: date-time
+        description: TODO
+      user_agent:
+        type: string
+        description: TODO
+      request_method:
+        type: string
+        description: TODO
+        enum:
+          - GET
+          - POST
+          - UPDATE
+          - DELETE
   Report:
     type: object
     properties:
@@ -290,7 +455,7 @@ definitions:
         type: boolean
         description: TODO
       reported_by:
-        $ref: '#/definitions/Person'
+        $ref: '#/definitions/Account'
       vehicles:
         type: array
         items:
@@ -350,7 +515,7 @@ definitions:
         type: string
         description: 'TODO (police, insurance, owner, violent, non-violent)'
       vehicle_owner:
-        $ref: '#/definitions/Person'
+        $ref: '#/definitions/Account'
       vehicle_vin:
         type: string
   Error:
